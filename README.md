@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Long tail recovery project for soils
 
 THIS IS A DRAFT. PROJECT IS IN PRELIMINARY PHASE AND SUBJECT TO CHANGE AT ANYTIME.
@@ -63,3 +64,10 @@ R package for interacting with DataOne: https://jsta.github.io/2017/03/28/dataon
 Five ways consortia can catalyse open science, Nature, 2017 http://www.nature.com/news/five-ways-consortia-can-catalyse-open-science-1.21706
 
 National Data Service: http://www.nationaldataservice.org/
+=======
+# soilDataR
+This is an R package that holds scripts to haromonizes some digitial soil repositories.
+
+For a complete description of the project, including how to contribute, go to: https://github.com/ktoddbrown/soils-long-tail-recovery
+
+>>>>>>> 391027a656dedcff492cc8ca045880ce37df3130
