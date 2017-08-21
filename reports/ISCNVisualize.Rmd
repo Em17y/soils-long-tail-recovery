@@ -33,6 +33,12 @@ ISCN3 <- SoilDataR::processData_ISCN3(dir='../repoData/ISCN_3/')
 
 # Site locations
 ## Lat-lon map
+```{r Compare Graph}
+Compare_Sample.df <- meta$sample
+Compare_measurement.df <- meta$measurement
+write.csv(Compare_Sample.df,"compare_ISCN_samp")
+write.csv(Compare_measurement.df,"compare_ISCN_measure")
+```
 ```{r mapSites}
 
 mapWorld <- borders("world", colour="gray80", fill="gray80") # create a layer of borders
@@ -154,17 +160,19 @@ summary(subset(ISCN3$sample, grepl('^soc', measurementID) & (value < 0)))
 
 Reasonable BD minimum 0.03 or lower and maximum 2.7 g cm-3. 
 ```{r BD}
-plot.df <- merge(subset(ISCN3$sample, grepl('^bd_', measurementID) & 
+plot.df <- merge(subset(ISCN3$sample, grepl('^bd_samp', measurementID) & 
                           value > 0 & value < 2.7), ISCN3$measurement)
 ggplot(plot.df) +
-  geom_histogram(aes(x=value, y=..density..)) + 
+  geom_histogram(aes(x=value, y=..density..),fill="blue",alpha=0.5) + 
   #scale_x_log10() + 
   facet_wrap(type~unit)
 
-summary(subset(ISCN3$sample, grepl('^bd_', measurementID) & 
+summary(subset(ISCN3$sample, grepl('^bd_samp', measurementID) & 
                           (value <= 0 | value > 2.7)))
 
 nrow(plot.df)
+BD_plot.df <- plot.df
+write.csv(BD_plot.df, file="BD_compare")
 ```
 
 Number of samples for BD `r length(plot.df$value)`.
@@ -178,7 +186,7 @@ Number of samples for BD `r length(plot.df$value)`.
 ```{r C_OC_LOI}
 ggplot(merge(subset(ISCN3$sample, grepl('^(c_|oc|loi|soc)', measurementID) & value > 0),
              ISCN3$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
+  geom_histogram(aes(x=value, y=..density..),fill="red",alpha=0.5) + 
   scale_x_log10() + 
   facet_wrap(type~unit)
 
@@ -204,7 +212,7 @@ summary(subset(ISCN3$sample, grepl('^caco3', measurementID) & (value <= 0)))
 ```{r N}
 ggplot(merge(subset(ISCN3$sample, grepl('^n_', measurementID) & value > 0),
              ISCN3$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
+  geom_histogram(aes(x=value, y=..density..),fill="red") + 
   scale_x_log10() + 
   facet_wrap(type~unit)
 ```

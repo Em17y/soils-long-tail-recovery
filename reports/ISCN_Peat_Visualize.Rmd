@@ -3,8 +3,8 @@ title: "Peat"
 output: html_document
 ---
 #'Read function
-
 ```{r setup, include=FALSE}
+
 library(knitr)
 library(SoilDataR) #library(devtools); install_github("ktoddbrown/soilDataR")
 library(ggplot2) #make pretty plots
@@ -16,6 +16,7 @@ library(ggmap)
 library(maps)
 library(mapdata)
 library(fiftystater)
+library(hexbin)
 ```
 
 ```{r loadData}
@@ -152,18 +153,6 @@ ggplot(merge(subset(meta$sample, grepl('^(c_|oc|loi|soc)', variable) & value > 0
 summary(subset(meta$sample, grepl('^(c_|oc|loi)', variable) & (value < 0)))
 ```
 
-## Carbon (inorganic)
-Percent inorganic carbon in a sample.
-
-```{r CaCO3, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('^caco3', variable) & value > 0),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units)
-
-summary(subset(meta$sample, grepl('^caco3', variable) & (value <= 0)))
-```
 
 ## Nitrogen
 + *n_tot* most N is organic mass percent dry weight, probably estimated by dry combustion (Dumas methods), sometimes also Kjeldahl digestion converts N to nitrate and then measures nitrate.
@@ -175,137 +164,3 @@ ggplot(merge(subset(meta$sample, grepl('^n_', variable) & value > 0),
   scale_x_log10() + 
   facet_wrap(type~units)
 ```
-
-## pH
-
-+ *ph_cacl* 1:2 Soil-CaCl2 suspension
-+ *ph_h2o* 1:1 Soil-water suspension
-+ *ph_other* non-standard catch all
-
-```{r pH, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('^ph_', variable) & 
-                      value > 1.5 & value < 11),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  #scale_x_log10() + 
-  facet_wrap(type~units)
-
-summary(subset(meta$sample, grepl('^ph_', variable) & (value <= 1.5 | value > 11)))
-#d_ply(subset(meta$sample, grepl('^ph_', variable) & (value <= 1.5 | value > 11)), 
-#      'variable', function(xx){print(summary(xx))})
-```
-
-## Sand, clay, slit, and percent coarse fragement content
-
-Partical size analysis. 
-Methods might not be completely annotated.
-
-+ *wpg2* coarse fragment (>2mm) content by weight
-+ *sand_tot_psa* percentage of sand
-+ *clay_tot_psa* percentage of clay
-+ *silt_tot_psa* percentage of silt
-
-```{r Texture, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('(wpg|tot_psa)', variable) & 
-                      value < 100 & value >= 0 ),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  #scale_x_log10() + 
-  facet_wrap(type~units)
-
-summary(subset(meta$sample, grepl('(wpg|tot_psa)', variable) & 
-                 (value < 0 | value > 100)))
-```
-
-##Cation exchange capasity and base saturation
-
-+ *cat_exch* cation exchange capasity [[TODO: Ask Luke N about this variable]]
-+ *cec_sum* cation exchange capsity (sum of cations)
-+ *ecec* effective cation exchange capsity
-+ *bs* base saturation (NH4OAc at pH 7.0)
-+ *bs_sum* base saturation (sum of cations at pH 8.2)
-
-```{r cat, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('(cat_exch|cec_sum|ecec)', variable)& (value > 0)),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units)
-
-summary(subset(meta$sample, grepl('(cat_exch|cec_sum|ecec)', variable) & (value <= 0)))
-```
-
-```{r bs, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('(bs|bs_sum)', variable)& (value > 0)),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units)
-
-summary(subset(meta$sample, grepl('(bs|bs_sum)', variable) & (value <= 0)))
-```
-
-## Extractable bases
-+ *ca_al* TODO Luke N, what is this??
-+ *ca_ext* calcium extractable (SSL: NH4OAc extractable)
-+ *k_ext* potassium extractable (SSL: NH4OAc extractable)
-+ *mg_ext* magnesium extractable (SSL: NH4OAc extractable)
-+ *na_ext* sodium extractable (SSL: NH4OAc extractable)
-+ *base_sum* sum of NH4OAc extractable bases
-```{r metals_ext, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('(ca|k|mg|na)', variable) & value > 0),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units, scales='free')
-
-summary(subset(meta$sample, grepl('(ca|k|mg|na)', variable) & (value <= 0)))
-```
-
-## metal (Al, Fe, Mn) extracts
-For meta this is only for NRCS data.
-
-+ *_dith* Dithionite citrate extractable
-+ *_ox* Oxalate extractable
-+ *al_other* and *fe_other* Sodium phyrophospate extractable 
-+ *mn_other* KCl extractable
-
-```{r metals_percent, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, 
-                    grepl('^(al|fe|mn)_', variable) &
-                      (value <= 100 & value >= 0)),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units, scales='free')
-
-summary(subset(meta$sample, grepl('^(al|fe|mn)_', variable) &
-                      !grepl('ext', variable) & (value < 0 | value > 100)))
-```
-
-## Phosphorus
-+ *p_bray* bray-1 extractable
-+ *p_ox* oxalate extractable
-+ *p_other* mehlich3 extractable
-
-```{r p_percent, eval=FALSE, include=FALSE}
-ggplot(merge(subset(meta$sample, grepl('^p_', variable)),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  scale_x_log10() + 
-  facet_wrap(type~units, scales='free')
-
-summary(subset(meta$sample, grepl('^p_', variable) & (value > 100 | value < 0)))
-```
-
-## Isotope
-
-```{r isotope, eval=FALSE, include=FALSE}
-#15n          13c          14c
-ggplot(merge(subset(meta$sample, grepl('^1[345]', variable)),
-             meta$measurement)) +
-  geom_histogram(aes(x=value, y=..density..)) + 
-  #scale_x_log10() + 
-  facet_wrap(~type, scales='free')
-
-summary(subset(meta$sample, grepl('^1[345]', variable)))
